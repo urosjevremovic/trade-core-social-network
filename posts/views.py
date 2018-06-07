@@ -4,9 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 
 from .models import Post
 from .forms import PostForm
+from .utils import code_generator
 
 
 @login_required
@@ -32,11 +34,19 @@ def post_detail(request, year, month, day, post):
 
 @login_required
 def post_create(request):
+    list_of_post_names = []
+    posts = Post.objects.all()
+    for post in posts:
+        if post.publish.day == timezone.now().day and post.publish.month == timezone.now().month and \
+                post.publish.year == timezone.now().year:
+            list_of_post_names.append(post.title)
     if request.method == 'POST':
         form = PostForm(data=request.POST)
         if form.is_valid():
             new_post = form.save(commit=False)
             new_post.author = request.user
+            if new_post.title in list_of_post_names:
+                new_post.title = new_post.title + code_generator()
             new_post.save()
             messages.success(request, 'Post created')
             return redirect(new_post.get_absolute_url())
@@ -75,4 +85,3 @@ def post_like(request):
         except:
             pass
     return JsonResponse({'status': 'ok'})
-

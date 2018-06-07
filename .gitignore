@@ -1,5 +1,6 @@
 build/
 dist/
+media/
 *.egg-info/
 *.egg
 *.py[cod]
