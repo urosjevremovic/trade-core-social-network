@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load thumbnail %}
+
+{% block title %}{{ user.get_full_name }}{% endblock title %}
+
+{% block content %}
+    {% if user.get_full_name %}
+        <h1>{{ user.get_full_name }}</h1>
+    {% else %}
+         <h1>{{ user.username }}</h1>
+    {% endif %}
+    <div class="profile-info">
+        {% thumbnail user.profile.photo "180x180" crop="100%" as im %}
+            <img src="{{ im.url }}" class="user-detail">
+        {% endthumbnail %}
+    </div>
+    {% for post in user.blog_posts.all %}
+        <div id="post-list" class="post-container-profile">
+            <a href="{{ post.get_absolute_url }}">
+                {{ post.title }}
+            </a>
+        </div>
+    {% endfor %}
+{% endblock %}
