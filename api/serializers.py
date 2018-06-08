@@ -1,14 +1,10 @@
-from django.utils import timezone
 from rest_framework import serializers
 from account.models import Profile
 from posts.models import Post
-from django.contrib.auth.models import User
 from account.utils import check_mail_validity_with_email_hippo, get_person_detail_based_on_provided_email
 from urllib import request as request_lib
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
-from django.dispatch import receiver
-from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 
 
@@ -19,9 +15,8 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
 
     def update(self, instance, validated_data):
         super().update(instance, validated_data)
-        if instance.users_like == instance.author:
-            instance.users_like.remove(instance.author)
-            instance.save()
+        instance.users_like.remove(instance.author)
+        instance.save()
         return instance
 
 
@@ -39,7 +34,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password', 'profile', 'posts_liked', 'blog_posts')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password', 'posts_liked', 'blog_posts', 'is_active', 'profile')
         extra_kwargs = {
             'password': {'write_only': True},
         }
@@ -50,13 +45,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             username=validated_data['username'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
+            is_active=validated_data['is_active'],
         )
-
-        @receiver(post_save, sender=User)
-        def create_or_update_user_profile(sender, instance, created, **kwargs):
-            if created:
-                Profile.objects.create(user=instance)
-            instance.profile.save()
 
         user.set_password(validated_data['password'])
         user.posts_liked.set(validated_data['posts_liked'])
@@ -83,11 +73,11 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
         return user
 
-    #
-    # def validate_email(self, value):
-    #     response = check_mail_validity_with_email_hippo(value)
-    #     if response != 'Ok':
-    #         raise serializers.ValidationError("Please enter a valid email address")
-    #         # pass
-    #     return value
+
+    def validate_email(self, value):
+        response = check_mail_validity_with_email_hippo(value)
+        if response != 'Ok':
+            raise serializers.ValidationError("Please enter a valid email address")
+            # pass
+        return value
 

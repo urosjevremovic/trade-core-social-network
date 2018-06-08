@@ -1,5 +1,7 @@
 import requests
 import clearbit
+import random
+import string
 
 email_hunter_api_key = 'a75f1f551634d70884f8c059160c1a455b4bfb46'
 email_hippo_api_key = '011EEB7F'
@@ -12,7 +14,8 @@ def check_mail_validity_with_email_hunter(mail):
     try:
         return response['data']['result']
     except KeyError:
-        raise KeyError('Reached maximum daily number of email verification checks.')
+        print('Reached maximum daily number of email verification checks.')
+        pass
 
 
 check_mail_validity_with_email_hunter('urosh43@gmail.com')
@@ -23,10 +26,16 @@ def check_mail_validity_with_email_hippo(mail):
     try:
         return response['result']
     except KeyError:
-        raise KeyError('Reached maximum daily number of email verification checks.')
+        print('Reached maximum daily number of email verification checks.')
+        pass
 
 
 def get_person_detail_based_on_provided_email(mail):
     person = clearbit.Person.find(email=mail, stream=True)
     if person is not None:
         return person
+
+
+def code_generator(size=15, chars=string.ascii_lowercase + string.digits):
+
+    return ''.join(random.choice(chars) for _ in range(size))

@@ -34,6 +34,20 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'social.website.staff@gmail.com'
+EMAIL_HOST_PASSWORD = 'eveningstar'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'Noreply@social.website <social.website.staff@gmail.com>'
+
+ADMINS = (
+    ('Uros', 'urosh43@gmail.com'),
+)
+MANAGERS = ADMINS
+
+SITE_URL = "http://127.0.0.1:8000"
 
 # Application definition
 
@@ -150,6 +164,6 @@ ABSOLUTE_URL_OVERRIDES = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated', ),
-    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_simplejwt.authentication.JWTAuthentication', ),
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly', ),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_simplejwt.authentication.JWTAuthentication', ),
 }
