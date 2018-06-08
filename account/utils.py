@@ -9,7 +9,10 @@ clearbit.key = 'sk_8bd5becf75c9824855a6d6a23f957c0a'
 def check_mail_validity_with_email_hunter(mail):
     response = requests.get(f'https://api.hunter.io/v2/email-verifier?email={mail}&api_key={email_hunter_api_key}').\
         json()
-    return response['data']['result']
+    try:
+        return response['data']['result']
+    except KeyError:
+        raise KeyError('Reached maximum daily number of email verification checks.')
 
 
 check_mail_validity_with_email_hunter('urosh43@gmail.com')
@@ -17,7 +20,10 @@ check_mail_validity_with_email_hunter('urosh43@gmail.com')
 
 def check_mail_validity_with_email_hippo(mail):
     response = requests.get(f'https://api1.27hub.com/api/emh/a/v2?k={email_hippo_api_key}&e={mail}').json()
-    return response['result']
+    try:
+        return response['result']
+    except KeyError:
+        raise KeyError('Reached maximum daily number of email verification checks.')
 
 
 def get_person_detail_based_on_provided_email(mail):

@@ -8,33 +8,18 @@ from urllib import request as request_lib
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
 
-from posts.utils import code_generator
-
 
 class PostSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'url', 'title', 'author', 'body', 'users_like', 'status')
 
-    def create(self, validated_data):
-        list_of_post_names = []
-        posts = Post.objects.all()
-        for post in posts:
-            if post.publish.day == timezone.now().day and post.publish.month == timezone.now().month and \
-                    post.publish.year == timezone.now().year:
-                list_of_post_names.append(post.title)
-        post = Post.objects.create(
-            title=validated_data['title'],
-            author=validated_data['author'],
-            body=validated_data['body'],
-            status=validated_data['status'],
-        )
-
-        post.users_like.set(validated_data['users_like'])
-        if post.title in list_of_post_names:
-            post.title = post.title + code_generator()
-
-        return post
+    def update(self, instance, validated_data):
+        super().update(instance, validated_data)
+        if instance.users_like == instance.author:
+            instance.users_like.remove(instance.author)
+            instance.save()
+        return instance
 
 
 class ProfileSerializer(serializers.HyperlinkedModelSerializer):
@@ -51,7 +36,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password', 'profile')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password', 'profile', 'posts_liked', 'blog_posts')
         extra_kwargs = {
             'password': {'write_only': True},
         }
@@ -62,6 +47,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             username=validated_data['username'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
+            posts_liked=validated_data['posts_liked'],
+            blog_posts=validated_data['blog_posts'],
         )
         user.set_password(validated_data['password'])
         user_data = get_person_detail_based_on_provided_email(user.email)
@@ -77,10 +64,13 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
                 pass
         user.save()
         profile = Profile.objects.create(user=user)
-        photo_url = user_data['avatar']
-        response = request_lib.urlopen(photo_url)
-        image_name = '{}.jpg'.format(slugify(user.username))
-        user.profile.photo.save(image_name, ContentFile(response.read()))
+        try:
+            photo_url = user_data['avatar']
+            response = request_lib.urlopen(photo_url)
+            image_name = '{}.jpg'.format(slugify(user.username))
+            user.profile.photo.save(image_name, ContentFile(response.read()))
+        except TypeError:
+            pass
 
         return user
 
@@ -89,3 +79,4 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         if response != 'Ok':
             raise serializers.ValidationError("Please enter a valid email address")
         return value
+

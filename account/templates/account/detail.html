@@ -15,7 +15,11 @@
         {% endthumbnail %}
     </div>
     {% for post in user.blog_posts.all %}
-        <div id="post-list" class="post-container-profile">
+        {% if user.profile.photo %}
+            <div id="post-list" class="post-container-profile">
+        {% else %}
+            <div id="post-list" class="post-container">
+        {% endif %}
             <a href="{{ post.get_absolute_url }}">
                 {{ post.title }}
             </a>

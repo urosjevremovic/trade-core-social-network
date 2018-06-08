@@ -8,7 +8,6 @@ from django.utils import timezone
 
 from .models import Post
 from .forms import PostForm
-from .utils import code_generator
 
 
 @login_required
@@ -26,9 +25,8 @@ def post_list(request):
 
 
 @login_required
-def post_detail(request, year, month, day, post):
-    post = get_object_or_404(Post, slug=post, status='published', publish__year=year, publish__month=month,
-                             publish__day=day)
+def post_detail(request, id):
+    post = get_object_or_404(Post, id=id)
     return render(request, 'posts/detail.html', {'post': post})
 
 
@@ -45,8 +43,6 @@ def post_create(request):
         if form.is_valid():
             new_post = form.save(commit=False)
             new_post.author = request.user
-            if new_post.title in list_of_post_names:
-                new_post.title = new_post.title + code_generator()
             new_post.save()
             messages.success(request, 'Post created')
             return redirect(new_post.get_absolute_url())
