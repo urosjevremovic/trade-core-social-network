@@ -7,6 +7,9 @@ from account.utils import check_mail_validity_with_email_hippo, get_person_detai
 from urllib import request as request_lib
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+from django.contrib.auth.models import User
 
 
 class PostSerializer(serializers.HyperlinkedModelSerializer):
@@ -47,10 +50,17 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             username=validated_data['username'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
-            posts_liked=validated_data['posts_liked'],
-            blog_posts=validated_data['blog_posts'],
         )
+
+        @receiver(post_save, sender=User)
+        def create_or_update_user_profile(sender, instance, created, **kwargs):
+            if created:
+                Profile.objects.create(user=instance)
+            instance.profile.save()
+
         user.set_password(validated_data['password'])
+        user.posts_liked.set(validated_data['posts_liked'])
+        user.blog_posts.set(validated_data['blog_posts'])
         user_data = get_person_detail_based_on_provided_email(user.email)
         if not user.first_name:
             try:
@@ -63,7 +73,6 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             except TypeError:
                 pass
         user.save()
-        profile = Profile.objects.create(user=user)
         try:
             photo_url = user_data['avatar']
             response = request_lib.urlopen(photo_url)
@@ -74,9 +83,11 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
         return user
 
-    def validate_email(self, value):
-        response = check_mail_validity_with_email_hippo(value)
-        if response != 'Ok':
-            raise serializers.ValidationError("Please enter a valid email address")
-        return value
+    #
+    # def validate_email(self, value):
+    #     response = check_mail_validity_with_email_hippo(value)
+    #     if response != 'Ok':
+    #         raise serializers.ValidationError("Please enter a valid email address")
+    #         # pass
+    #     return value
 

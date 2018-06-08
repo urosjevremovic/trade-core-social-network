@@ -37,7 +37,7 @@ def register(request):
             new_user.set_password(user_form.cleaned_data['password'])
             new_user.username = new_user.username.capitalize()
             new_user.save()
-            profile = Profile.objects.create(user=new_user)
+            profile = new_user.profile
             try:
                 photo_url = user_data['avatar']
                 response = request_lib.urlopen(photo_url)
