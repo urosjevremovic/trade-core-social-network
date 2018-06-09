@@ -18,7 +18,7 @@ class Post(models.Model):
     )
     title = models.CharField(max_length=50)
     slug = models.SlugField(max_length=50,
-                            unique_for_date='publish')
+                            unique_for_date='publish', blank=True, null=True)
     author = models.ForeignKey(User, related_name='blog_posts', on_delete=models.CASCADE)
     body = models.TextField()
     publish = models.DateTimeField(default=timezone.now)
@@ -32,7 +32,7 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
-            super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ('-publish',)

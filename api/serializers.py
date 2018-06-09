@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField, SerializerMethodField
 from account.models import Profile
 from posts.models import Post
 from account.utils import check_mail_validity_with_email_hippo, get_person_detail_based_on_provided_email
@@ -8,33 +8,48 @@ from django.utils.text import slugify
 from django.contrib.auth.models import User
 
 
-class PostSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Post
-        fields = ('id', 'url', 'title', 'author', 'body', 'users_like', 'status')
+post_url = HyperlinkedIdentityField(
+        view_name='api:post-detail-view',
+        lookup_field='pk',
+    )
+post_delete_url = HyperlinkedIdentityField(
+        view_name='api:post-delete-view',
+        lookup_field='pk',
+    )
 
-    def update(self, instance, validated_data):
-        super().update(instance, validated_data)
-        instance.users_like.remove(instance.author)
-        instance.save()
-        return instance
+user_url = HyperlinkedIdentityField(
+    view_name='api:user-detail-view',
+    lookup_field='pk',
+)
+
+profile_url = HyperlinkedIdentityField(
+    view_name='api:profile-detail-view',
+    lookup_field='pk',
+)
 
 
-class ProfileSerializer(serializers.HyperlinkedModelSerializer):
+class ProfileSerializer(ModelSerializer):
+    url = profile_url
+    user = SerializerMethodField()
+
     class Meta:
         model = Profile
-        fields = ('id', 'user', 'date_of_birth', 'photo')
+        fields = ('id', 'url', 'user', 'date_of_birth', 'photo')
         extra_kwargs = {
             'user': {'read_only': True},
         }
 
+    def get_user(self, obj):
+        return obj.user.username
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+
+class UserSerializer(ModelSerializer):
     profile = ProfileSerializer(required=True)
+    url = user_url
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password', 'posts_liked', 'blog_posts', 'is_active', 'profile')
+        fields = ('id', 'url', 'username', 'first_name', 'last_name', 'email', 'password', 'posts_liked', 'blog_posts', 'is_active', 'profile')
         extra_kwargs = {
             'password': {'write_only': True},
         }
@@ -74,10 +89,35 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         return user
 
 
-    def validate_email(self, value):
-        response = check_mail_validity_with_email_hippo(value)
-        if response != 'Ok':
-            raise serializers.ValidationError("Please enter a valid email address")
-            # pass
-        return value
+    # def validate_email(self, value):
+    #     response = check_mail_validity_with_email_hippo(value)
+    #     if response != 'Ok':
+    #         raise serializers.ValidationError("Please enter a valid email address")
+    #         # pass
+    #     return value
+
+
+class PostSerializer(ModelSerializer):
+    url = post_url
+    delete_url = post_delete_url
+    author = UserSerializer(required=True)
+
+    class Meta:
+        model = Post
+        fields = ('id', 'url', 'delete_url', 'title', 'author', 'body', 'users_like', 'status')
+
+    def update(self, instance, validated_data):
+        super().update(instance, validated_data)
+        instance.users_like.remove(instance.author)
+        instance.save()
+        return instance
+
+
+class PostCreateUpdateSerializer(ModelSerializer):
+    url = post_url
+    delete_url = post_delete_url
+
+    class Meta:
+        model = Post
+        fields = ('title', 'url', 'delete_url', 'body', 'status')
 
