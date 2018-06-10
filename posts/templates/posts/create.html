@@ -2,9 +2,9 @@
 {% block title %}New post{% endblock %}
 {% block content %}
     <h1>New post</h1>
-    <form action="." method="post">
-        {{ form.as_p }}
+    <form action="{% url 'api:post-create-view' pk=post.pk %}" method="post">
         {% csrf_token %}
+        {% render_form serializer %}
         <input type="submit" value="Post it!">
     </form>
 {% endblock %}

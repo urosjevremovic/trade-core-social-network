@@ -32,12 +32,7 @@ def post_detail(request, id):
 
 @login_required
 def post_create(request):
-    list_of_post_names = []
     posts = Post.objects.all()
-    for post in posts:
-        if post.publish.day == timezone.now().day and post.publish.month == timezone.now().month and \
-                post.publish.year == timezone.now().year:
-            list_of_post_names.append(post.title)
     if request.method == 'POST':
         form = PostForm(data=request.POST)
         if form.is_valid():

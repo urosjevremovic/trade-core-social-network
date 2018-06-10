@@ -27,10 +27,10 @@ def register(request):
         if user_form.is_valid():
             new_user = user_form.save(commit=False)
             mail = user_form.cleaned_data['email']
-            response = check_mail_validity_with_email_hippo(mail)
-            if response != 'Ok':
-                messages.error(request, "Please enter a valid email address")
-                return redirect('account:register')
+            # response = check_mail_validity_with_email_hippo(mail)
+            # if response != 'Ok':
+            #     messages.error(request, "Please enter a valid email address")
+            #     return redirect('account:register')
             # user_data = get_person_detail_based_on_provided_email(mail)
             # try:
             #     new_user.first_name = user_data['name']['givenName']
