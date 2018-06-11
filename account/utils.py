@@ -2,10 +2,20 @@ import requests
 import clearbit
 import random
 import string
+import json
 
-email_hunter_api_key = 'a75f1f551634d70884f8c059160c1a455b4bfb46'
-email_hippo_api_key = '011EEB7F'
-clearbit.key = 'sk_8bd5becf75c9824855a6d6a23f957c0a'
+"""
+For testing purposes only, if this was an actual production app or if local environment was run only on my
+machine, these values would be saved as environment variables.
+"""
+
+with open('api_keys.json') as f:
+    api_keys = json.load(f)
+
+email_hunter_api_key = api_keys['email_hunter_api_key']
+email_hippo_api_key = api_keys['email_hippo_api_key']
+never_bounce_api_key = api_keys['never_bounce_api_key']
+clearbit.key = api_keys['clearbit_api_key']
 
 
 def check_mail_validity_with_email_hunter(mail):
@@ -18,11 +28,17 @@ def check_mail_validity_with_email_hunter(mail):
         pass
 
 
-check_mail_validity_with_email_hunter('urosh43@gmail.com')
-
-
 def check_mail_validity_with_email_hippo(mail):
     response = requests.get(f'https://api1.27hub.com/api/emh/a/v2?k={email_hippo_api_key}&e={mail}').json()
+    try:
+        return response['result']
+    except KeyError:
+        print('Reached maximum daily number of email verification checks.')
+        pass
+
+
+def check_mail_validity_with_never_bounce(mail):
+    response = requests.get(f'https://api.neverbounce.com/v4/single/check?key={never_bounce_api_key}&email={mail}').json()
     try:
         return response['result']
     except KeyError:

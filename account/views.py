@@ -11,7 +11,7 @@ from urllib import request as request_lib
 
 from .forms import UserRegistrationForm, UserEditForm, ProfileEditForm
 from .models import Profile
-from .utils import check_mail_validity_with_email_hippo, check_mail_validity_with_email_hunter, code_generator
+from .utils import check_mail_validity_with_email_hippo, check_mail_validity_with_email_hunter, get_person_detail_based_on_provided_email, check_mail_validity_with_never_bounce, code_generator
 
 
 @login_required
@@ -27,30 +27,30 @@ def register(request):
         if user_form.is_valid():
             new_user = user_form.save(commit=False)
             mail = user_form.cleaned_data['email']
-            # response = check_mail_validity_with_email_hippo(mail)
-            # if response != 'Ok':
-            #     messages.error(request, "Please enter a valid email address")
-            #     return redirect('account:register')
-            # user_data = get_person_detail_based_on_provided_email(mail)
-            # try:
-            #     new_user.first_name = user_data['name']['givenName']
-            #     new_user.last_name = user_data['name']['familyName']
-            # except TypeError:
-            #     pass
-            # new_user.set_password(user_form.cleaned_data['password'])
-            # new_user.username = new_user.username.capitalize()
-            # new_user.is_active = False
+            response = check_mail_validity_with_never_bounce(mail)
+            print(response)
+            if response != 'disposable' and response != 'valid':
+                messages.error(request, "Please enter a valid email address")
+                return redirect('account:register')
+            user_data = get_person_detail_based_on_provided_email(mail)
+            try:
+                new_user.first_name = user_data['name']['givenName']
+                new_user.last_name = user_data['name']['familyName']
+            except TypeError:
+                pass
+            new_user.set_password(user_form.cleaned_data['password'])
+            new_user.username = new_user.username.capitalize()
+            new_user.is_active = False
             new_user.save()
             profile = new_user.profile
-            # profile = User.objects.create(username=new_user.username)
-            # try:
-            #     photo_url = user_data['avatar']
-            #     response = request_lib.urlopen(photo_url)
-            #     image_name = '{}.jpg'.format(slugify(new_user.username))
-            #     profile.photo.save(image_name, ContentFile(response.read()))
-            #     profile.save()
-            # except (TypeError, AttributeError):
-            #     pass
+            try:
+                photo_url = user_data['avatar']
+                response = request_lib.urlopen(photo_url)
+                image_name = '{}.jpg'.format(slugify(new_user.username))
+                profile.photo.save(image_name, ContentFile(response.read()))
+                profile.save()
+            except (TypeError, AttributeError):
+                pass
             profile.activation_key = code_generator()
             path = reverse('account:activate', kwargs={"code": profile.activation_key})
             full_path = settings.SITE_URL + path

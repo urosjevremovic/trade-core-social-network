@@ -11,19 +11,26 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+import json
 
 from django.urls import reverse_lazy
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+with open('api_keys.json') as f:
+    api_keys = json.load(f)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
+"""
+For testing purposes only, if this was an actual production app or if local environment was run only on my
+machine, this value would be saved as environment variables.
+"""
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = '#$g=4mtqf$&pam6-jol21&op6p^mi=0pu235np7e+0()f+h^%='
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = api_keys['SECRET_KEY']
+# SECRET_KEY = os.environ.get('SECRET_KEY')
 
 EMAIL_HUNTER_API_KEY = os.environ.get('EMAIL_HUNTER_API_KEY')
 
@@ -163,20 +170,15 @@ ABSOLUTE_URL_OVERRIDES = {
     'auth.user': lambda user: reverse_lazy('account:users_detail', args=[user.username])
 }
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly', ),
-#     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_simplejwt.authentication.JWTAuthentication', ),
-# }
-
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny', ),
 
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_simplejwt.authentication.JWTAuthentication', ),
 
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-    ),
-    'DEFAULT_PARSER_CLASSES': (
-        'rest_framework.parsers.JSONParser',
-    )
+    # 'DEFAULT_RENDERER_CLASSES': (
+    #     'rest_framework.renderers.JSONRenderer',
+    # ),
+    # 'DEFAULT_PARSER_CLASSES': (
+    #     'rest_framework.parsers.JSONParser',
+    # )
 }

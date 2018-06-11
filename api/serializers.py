@@ -1,8 +1,8 @@
 from django.core.exceptions import ValidationError
-from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField, SerializerMethodField, CharField, EmailField
+from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField, SerializerMethodField, EmailField
 from account.models import Profile
 from posts.models import Post
-from account.utils import check_mail_validity_with_email_hippo, get_person_detail_based_on_provided_email
+from account.utils import check_mail_validity_with_email_hippo, get_person_detail_based_on_provided_email, check_mail_validity_with_never_bounce, check_mail_validity_with_email_hunter
 from urllib import request as request_lib
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
@@ -45,13 +45,12 @@ class ProfileSerializer(ModelSerializer):
 
 
 class UserCreateSerializer(ModelSerializer):
-    profile = ProfileSerializer(required=True)
     url = user_url
     email = EmailField(label='Email address')
 
     class Meta:
         model = User
-        fields = ('id', 'url', 'username', 'first_name', 'last_name', 'email', 'password', 'posts_liked', 'blog_posts', 'is_active', 'profile')
+        fields = ('id', 'url', 'username', 'first_name', 'last_name', 'email', 'password', 'posts_liked', 'blog_posts', 'is_active',)
         extra_kwargs = {
             'password': {'write_only': True},
             'id': {'read_only': True},
@@ -65,6 +64,9 @@ class UserCreateSerializer(ModelSerializer):
 
     def validate_email(self, value):
         user_queryset = User.objects.filter(email=value)
+        # response = check_mail_validity_with_never_bounce(value)
+        # if response != 'disposable' and response != 'valid':
+        #     raise ValidationError("Please enter a valid email address")
         if user_queryset.exists():
             raise ValidationError('This email address is already in use')
         return value
@@ -76,8 +78,6 @@ class UserCreateSerializer(ModelSerializer):
         )
 
         user.set_password(validated_data['password'])
-        # user.posts_liked.set(validated_data['posts_liked'])
-        # user.blog_posts.set(validated_data['blog_posts'])
         # user_data = get_person_detail_based_on_provided_email(user.email)
         # if not user.first_name:
         #     try:
@@ -101,14 +101,6 @@ class UserCreateSerializer(ModelSerializer):
         return user
 
 
-    # def validate_email(self, value):
-    #     response = check_mail_validity_with_email_hippo(value)
-    #     if response != 'Ok':
-    #         raise serializers.ValidationError("Please enter a valid email address")
-    #         # pass
-    #     return value
-
-
 class PostSerializer(ModelSerializer):
     url = post_url
     delete_url = post_delete_url
@@ -117,12 +109,6 @@ class PostSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'url', 'delete_url', 'title', 'body', 'users_like', 'status', 'author'  )
-
-    # def update(self, instance, validated_data):
-    #     super().update(instance, validated_data)
-    #     instance.users_like.remove(instance.author)
-    #     instance.save()
-    #     return instance
 
 
 class PostCreateUpdateSerializer(ModelSerializer):
@@ -133,31 +119,3 @@ class PostCreateUpdateSerializer(ModelSerializer):
         model = Post
         fields = ('title', 'url', 'delete_url', 'body', 'status')
 
-
-# class UserLoginSerializer(ModelSerializer):
-#     token = CharField(allow_blank=True, read_only=True)
-#     username = CharField(required=False, allow_blank=True)
-#
-#     class Meta:
-#         model = User
-#         fields = ('username', 'password', 'token')
-#         extra_kwargs = {
-#             'token': {'read_only': True},
-#         }
-#
-#     def validate(self, data):
-#         user_object = None
-#         username = data.get('username', None)
-#         password = data.get('password')
-#         if not username:
-#             raise ValidationError('You must provide username to login.')
-#         user = User.objects.filter(username=username)
-#         if user.exists() and user.count() == 1:
-#             user_object = user.first()
-#         else:
-#             raise ValidationError('User with the given username doesn\'t exist.')
-#         if user_object:
-#             if not user_object.check_password(password):
-#                 raise ValidationError('Wrong password. Please try again.')
-#         data['token'] = 'RANDOM_TOKEN'
-#         return data

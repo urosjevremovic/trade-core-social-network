@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.utils import timezone
 
 from .models import Post
 from .forms import PostForm
@@ -21,7 +20,7 @@ def post_list(request):
         posts = paginator.page(1)
     except EmptyPage:
         posts = paginator.page(paginator.num_pages)
-    return render(request, 'posts/list.html', {'page': page, 'posts': posts})
+    return render(request, 'posts/list.html', {'page': page, 'posts': posts, 'section': 'posts'})
 
 
 @login_required
@@ -57,7 +56,7 @@ def users_post_list(request):
         posts = paginator.page(1)
     except EmptyPage:
         posts = paginator.page(paginator.num_pages)
-    return render(request, 'posts/list.html', {'page': page, 'posts': posts})
+    return render(request, 'posts/list.html', {'page': page, 'posts': posts, 'section': 'my posts'})
 
 
 @login_required
