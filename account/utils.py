@@ -4,6 +4,8 @@ import random
 import string
 import json
 
+from urllib.parse import quote
+
 """
 For testing purposes only, if this was an actual production app or if local environment was run only on my
 machine, these values would be saved as environment variables.
@@ -19,7 +21,8 @@ clearbit.key = api_keys['clearbit_api_key']
 
 
 def check_mail_validity_with_email_hunter(mail):
-    response = requests.get(f'https://api.hunter.io/v2/email-verifier?email={mail}&api_key={email_hunter_api_key}').\
+    parsed_email = quote(mail)
+    response = requests.get(f'https://api.hunter.io/v2/email-verifier?email={parsed_email}&api_key={email_hunter_api_key}').\
         json()
     try:
         return response['data']['result']
@@ -29,7 +32,8 @@ def check_mail_validity_with_email_hunter(mail):
 
 
 def check_mail_validity_with_email_hippo(mail):
-    response = requests.get(f'https://api1.27hub.com/api/emh/a/v2?k={email_hippo_api_key}&e={mail}').json()
+    parsed_email = quote(mail)
+    response = requests.get(f'https://api1.27hub.com/api/emh/a/v2?k={email_hippo_api_key}&e={parsed_email}').json()
     try:
         return response['result']
     except KeyError:
@@ -38,7 +42,8 @@ def check_mail_validity_with_email_hippo(mail):
 
 
 def check_mail_validity_with_never_bounce(mail):
-    response = requests.get(f'https://api.neverbounce.com/v4/single/check?key={never_bounce_api_key}&email={mail}').json()
+    parsed_email = quote(mail)
+    response = requests.get(f'https://api.neverbounce.com/v4/single/check?key={never_bounce_api_key}&email={parsed_email}').json()
     try:
         return response['result']
     except KeyError:

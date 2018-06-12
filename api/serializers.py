@@ -64,9 +64,10 @@ class UserCreateSerializer(ModelSerializer):
 
     def validate_email(self, value):
         user_queryset = User.objects.filter(email=value)
-        # response = check_mail_validity_with_never_bounce(value)
-        # if response != 'disposable' and response != 'valid':
-        #     raise ValidationError("Please enter a valid email address")
+        response = check_mail_validity_with_never_bounce(value)
+        if response != 'disposable' and response != 'valid':
+            print(response)
+            raise ValidationError("fuck enter a valid email address")
         if user_queryset.exists():
             raise ValidationError('This email address is already in use')
         return value
@@ -78,25 +79,25 @@ class UserCreateSerializer(ModelSerializer):
         )
 
         user.set_password(validated_data['password'])
-        # user_data = get_person_detail_based_on_provided_email(user.email)
-        # if not user.first_name:
-        #     try:
-        #         user.first_name = user_data['name']['givenName']
-        #     except TypeError:
-        #         pass
-        # if not user.last_name:
-        #     try:
-        #         user.last_name = user_data['name']['familyName']
-        #     except TypeError:
-        #         pass
+        user_data = get_person_detail_based_on_provided_email(user.email)
+        if not user.first_name:
+            try:
+                user.first_name = user_data['name']['givenName']
+            except TypeError:
+                pass
+        if not user.last_name:
+            try:
+                user.last_name = user_data['name']['familyName']
+            except TypeError:
+                pass
         user.save()
-        # try:
-        #     photo_url = user_data['avatar']
-        #     response = request_lib.urlopen(photo_url)
-        #     image_name = '{}.jpg'.format(slugify(user.username))
-        #     user.profile.photo.save(image_name, ContentFile(response.read()))
-        # except TypeError:
-        #     pass
+        try:
+            photo_url = user_data['avatar']
+            response = request_lib.urlopen(photo_url)
+            image_name = '{}.jpg'.format(slugify(user.username))
+            user.profile.photo.save(image_name, ContentFile(response.read()))
+        except (TypeError, AttributeError):
+            pass
 
         return user
 
