@@ -1,10 +1,12 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
+
 {% block title %}New post{% endblock %}
 {% block content %}
     <h1>New post</h1>
-    <form action="{% url 'api:post-create-view' pk=post.pk %}" method="post">
+    <form action="." method="post">
         {% csrf_token %}
-        {% render_form serializer %}
+        {{ form|crispy }}
         <input type="submit" value="Post it!">
     </form>
 {% endblock %}
