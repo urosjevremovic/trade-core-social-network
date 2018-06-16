@@ -11,7 +11,8 @@ from urllib import request as request_lib
 
 from .forms import UserRegistrationForm, UserEditForm, ProfileEditForm
 from .models import Profile
-from .utils import check_mail_validity_with_email_hippo, check_mail_validity_with_email_hunter, get_person_detail_based_on_provided_email, check_mail_validity_with_never_bounce, code_generator
+from .utils import (check_mail_validity_with_email_hippo, check_mail_validity_with_email_hunter,
+                    get_person_detail_based_on_provided_email, check_mail_validity_with_never_bounce, code_generator)
 
 
 @login_required

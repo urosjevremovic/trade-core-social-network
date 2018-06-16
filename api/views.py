@@ -1,12 +1,35 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.generics import ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView, DestroyAPIView, CreateAPIView, GenericAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework import mixins
+from rest_framework.decorators import api_view
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.reverse import reverse
+from rest_framework.response import Response
+
 from posts.models import Post
 from account.models import Profile
 from django.contrib.auth.models import User
 from .serializers import PostSerializer, UserCreateSerializer, ProfileSerializer, PostCreateUpdateSerializer
-from .permissions import IsPostOwnerOrAdminUserOrReadOnly, IsAnonymousUser
-from rest_framework.response import Response
+from .permissions import IsPostOwnerOrAdminUserOrReadOnly, IsAnonymousUser, IsAccountwnerOrAdminUserOrReadOnly
+
+
+@api_view(['GET'])
+def api_home(request):
+    data = {
+        'posts': {
+            'count': Post.objects.count(),
+            'url': reverse('api:post-list-view'),
+        },
+        'users': {
+            'count': User.objects.count(),
+            'url': reverse('api:user-list-view'),
+        },
+        'profiles': {
+            'count': Profile.objects.count(),
+            'url': reverse('api:profile-list-view'),
+        },
+    }
+    return Response(data)
 
 
 class PostListView(ListAPIView):
@@ -23,32 +46,19 @@ class MyPostsListView(ListAPIView):
         return Post.objects.filter(author=self.request.user)
 
 
-class PostRetrieveView(RetrieveAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-
-
-class PostUpdateView(RetrieveUpdateAPIView):
+class PostRetrieveView(mixins.DestroyModelMixin, mixins.UpdateModelMixin, RetrieveAPIView):
     queryset = Post.objects.all()
     serializer_class = PostCreateUpdateSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, IsPostOwnerOrAdminUserOrReadOnly]
+    permission_classes = [IsPostOwnerOrAdminUserOrReadOnly]
 
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
-class PostDestroyView(DestroyAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, pk, format=None):
-        post = get_object_or_404(Post, pk=pk)
-        if post.author == request.user or request.user.is_staff:
-            post.delete()
-            return Response({'deleted': True})
-        return Response({'deleted': 'You can not delete other people posts.'})
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
 
 class PostCreateView(CreateAPIView):
-    queryset = Post.objects.all()
     serializer_class = PostCreateUpdateSerializer
     permission_classes = [IsAuthenticated, ]
 
@@ -58,7 +68,7 @@ class PostCreateView(CreateAPIView):
 
 class PostLikeView(RetrieveAPIView):
     queryset = Post.objects.all()
-    serializer_class = PostSerializer
+    serializer_class = PostCreateUpdateSerializer
     permission_classes = [IsAuthenticated, ]
 
     def get(self, request, pk, format=None):
@@ -74,7 +84,7 @@ class PostLikeView(RetrieveAPIView):
 
 
 class PostUnlikeView(RetrieveAPIView):
-    serializer_class = PostSerializer
+    serializer_class = PostCreateUpdateSerializer
     permission_classes = [IsAuthenticated, ]
 
     def get(self, request, pk, format=None):
@@ -101,25 +111,16 @@ class UserListView(ListAPIView):
     serializer_class = UserCreateSerializer
 
 
-class UserRetrieveView(RetrieveAPIView):
+class UserRetrieveView(mixins.DestroyModelMixin, RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
+    permission_classes = [IsAccountwnerOrAdminUserOrReadOnly, ]
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
 
 class UserCreateView(CreateAPIView):
     serializer_class = UserCreateSerializer
     permission_classes = [IsAnonymousUser, ]
-
-
-class UserDestroyView(DestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, pk, format=None):
-        user = get_object_or_404(User, pk=pk)
-        if user == request.user or request.user.is_staff:
-            user.delete()
-            return Response({'deleted': True})
-        return Response({'deleted': 'You can not delete other people accounts.'})
 

@@ -17,16 +17,20 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.auth.views import password_change, password_change_done, password_reset, password_reset_complete, password_reset_confirm, password_reset_done
+from django.contrib.auth.views import (password_change, password_change_done, password_reset, password_reset_complete,
+                                       password_reset_confirm, password_reset_done)
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from account.views import dashboard
+
+from api.views import api_home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('account/', include('account.urls'), name='account'),
     path('', dashboard, name='dashboard'),
     path('posts/', include('posts.urls'), name='posts'),
+    path('api/', api_home, name='api'),
     path('api/', include('api.urls'), name='api'),
     path('api-auth/', include('rest_framework.urls'), name='api-auth'),
     path('api/token/', TokenObtainPairView.as_view(), name='api-token'),

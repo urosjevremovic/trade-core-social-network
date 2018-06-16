@@ -13,10 +13,6 @@ post_url = HyperlinkedIdentityField(
         view_name='api:post-detail-view',
         lookup_field='pk',
     )
-post_delete_url = HyperlinkedIdentityField(
-        view_name='api:post-delete-view',
-        lookup_field='pk',
-    )
 
 user_url = HyperlinkedIdentityField(
     view_name='api:user-detail-view',
@@ -46,11 +42,13 @@ class ProfileSerializer(ModelSerializer):
 
 class UserCreateSerializer(ModelSerializer):
     url = user_url
+    profile_url = profile_url
     email = EmailField(label='Email address')
 
     class Meta:
         model = User
-        fields = ('id', 'url', 'username', 'first_name', 'last_name', 'email', 'password', 'posts_liked', 'blog_posts', 'is_active',)
+        fields = ('id', 'url', 'username', 'first_name', 'last_name', 'email', 'password', 'posts_liked',
+                  'blog_posts', 'is_active', 'profile_url')
         extra_kwargs = {
             'password': {'write_only': True},
             'id': {'read_only': True},
@@ -58,7 +56,6 @@ class UserCreateSerializer(ModelSerializer):
             'posts_liked': {'read_only': True},
             'blog_posts': {'read_only': True},
             'is_active': {'read_only': True},
-            'profile': {'read_only': True}
 
         }
 
@@ -66,8 +63,7 @@ class UserCreateSerializer(ModelSerializer):
         user_queryset = User.objects.filter(email=value)
         response = check_mail_validity_with_never_bounce(value)
         if response != 'disposable' and response != 'valid':
-            print(response)
-            raise ValidationError("fuck enter a valid email address")
+            raise ValidationError("Please enter a valid email address")
         if user_queryset.exists():
             raise ValidationError('This email address is already in use')
         return value
@@ -104,19 +100,25 @@ class UserCreateSerializer(ModelSerializer):
 
 class PostSerializer(ModelSerializer):
     url = post_url
-    delete_url = post_delete_url
     author = UserCreateSerializer(required=True)
 
     class Meta:
         model = Post
-        fields = ('id', 'url', 'delete_url', 'title', 'body', 'users_like', 'status', 'author'  )
+        fields = ('id', 'url', 'title', 'body', 'users_like', 'status', 'author')
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'url': {'read_only': True},
+            'users_like': {'read_only': True},
+            'author': {'read_only': True},
+        }
 
 
 class PostCreateUpdateSerializer(ModelSerializer):
-    url = post_url
-    delete_url = post_delete_url
 
     class Meta:
         model = Post
-        fields = ('title', 'url', 'delete_url', 'body', 'status')
-
+        fields = ('id', 'title', 'body', 'status', 'users_like')
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'users_like': {'read_only': True},
+        }
