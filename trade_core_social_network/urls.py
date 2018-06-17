@@ -32,7 +32,6 @@ urlpatterns = [
     path('posts/', include('posts.urls'), name='posts'),
     path('api/', api_home, name='api'),
     path('api/', include('api.urls'), name='api'),
-    path('api-auth/', include('rest_framework.urls'), name='api-auth'),
     path('api/token/', TokenObtainPairView.as_view(), name='api-token'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='api-token-refresh'),
     path('password_change/', password_change, name='password_change'),
