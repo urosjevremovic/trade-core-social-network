@@ -10,4 +10,6 @@ class PostSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {
             'author': {'read_only': True},
+            'publish': {'read_only': True},
+            'users_like': {'read_only': True},
         }
