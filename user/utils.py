@@ -10,7 +10,6 @@ with open('api_keys.json') as f:
 
 never_bounce_api_key = api_keys['never_bounce_api_key']
 clearbit.key = api_keys['clearbit_api_key']
-print(clearbit.key)
 
 
 def check_mail_validity_with_never_bounce(mail):
