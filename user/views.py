@@ -1,4 +1,3 @@
-from django.http import HttpResponse
 from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import ModelViewSet
 
@@ -25,6 +24,8 @@ class UserViewSet(ModelViewSet):
 # import jwt, json
 # from rest_framework import views
 # from rest_framework.response import Response
+# from django.http import HttpResponse
+# from django.contrib.auth.hashers import make_password, check_password
 #
 #
 # class Login(views.APIView):
@@ -35,8 +36,15 @@ class UserViewSet(ModelViewSet):
 #
 #         username = request.data.get('username')
 #         password = request.data.get('password')
+#         print(username)
+#         print(password)
+#         for user in User.objects.all():
+#             print(user.password)
 #         try:
-#             user = User.objects.get(username=username, password=password)
+#             user = User.objects.get(username=username)
+#             check_password(password, user.password)
+#             if not check_password:
+#                 user = ''
 #         except User.DoesNotExist:
 #             return Response({'Error': "Invalid username/password"}, status="400")
 #         if user:
@@ -45,8 +53,9 @@ class UserViewSet(ModelViewSet):
 #                 'email': user.email,
 #             }
 #             jwt_token = {'token': jwt.encode(payload, "SECRET_KEY")}
+#             jwt_token['token'] = jwt_token['token'].decode('utf-8')
 #
-#             return HttpResponse(
+#             return Response(
 #                 json.dumps(jwt_token),
 #                 status=200,
 #                 content_type="application/json"

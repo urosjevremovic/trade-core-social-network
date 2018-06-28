@@ -28,8 +28,9 @@ router.register('users', UserViewSet)
 
 urlpatterns = [
     path('obtain-token/', obtain_jwt_token),
-    path(r'login/', include('rest_framework.urls')),
+    path('login/', include('rest_framework.urls')),
     path('admin/', admin.site.urls),
+    # path('get_custom_token/', Login.as_view()),
 ]
 
 urlpatterns += router.urls

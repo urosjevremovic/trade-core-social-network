@@ -1,4 +1,3 @@
-from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -25,7 +24,7 @@ class PostViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(methods=['post', 'get'], detail=True)
+    @action(methods=['get'], detail=True)
     def like(self, request, pk=None):
         post = self.get_object()
         if request.user == post.author:

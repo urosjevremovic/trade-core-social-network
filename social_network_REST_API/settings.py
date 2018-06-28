@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/2.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
-
+import json
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -19,8 +19,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
+with open('api_keys.json') as f:
+    api_keys = json.load(f)
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'q)wff(a57uzp_vi(ew1507ce^xs$9wjifi-y6kdvbmz*-a9p&d'
+SECRET_KEY = api_keys['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -132,4 +135,6 @@ REST_FRAMEWORK = {
         ('rest_framework.permissions.AllowAny', ),
     # 'DEFAULT_AUTHENTICATION_CLASSES': (
         # 'rest_framework_jwt.authentication.JSONWebTokenAuthentication', ),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'user.authentication.TokenAuthentication',),
 }
