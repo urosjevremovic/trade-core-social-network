@@ -16,7 +16,7 @@ Including another URLconf
 from django.urls import path
 from django.contrib import admin
 from rest_framework.routers import DefaultRouter
-from rest_framework_jwt.views import obtain_jwt_token
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from post.views import PostViewSet
 from user.views import UserViewSet
@@ -27,7 +27,7 @@ router.register('users', UserViewSet)
 
 
 urlpatterns = [
-    path('obtain-token/', obtain_jwt_token),
+    path('obtain-token/', TokenObtainPairView.as_view()),
     path('admin/', admin.site.urls),
 ]
 

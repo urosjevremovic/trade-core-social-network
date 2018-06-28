@@ -1,5 +1,6 @@
-Django==2.0.6
-requests==2.19.1
-djangorestframework_jwt==1.11.0
 clearbit==0.1.7
+requests==2.19.1
+Django==2.0.6
+djangorestframework_simplejwt==3.2.3
 djangorestframework==3.8.2
+Pillow==5.1.0
