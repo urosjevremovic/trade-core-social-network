@@ -1,0 +1,5 @@
+Django==2.0.6
+requests==2.19.1
+djangorestframework_jwt==1.11.0
+clearbit==0.1.7
+djangorestframework==3.8.2
