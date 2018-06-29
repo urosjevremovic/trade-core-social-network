@@ -9,7 +9,7 @@ class IsAnonymousUser(permissions.BasePermission):
 
 
 class IsAccountwnerOrAdminUserOrReadOnly(permissions.BasePermission):
-    message = 'You are not the owner of this post.'
+    message = 'You are not the owner of this account.'
 
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:

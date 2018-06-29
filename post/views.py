@@ -28,7 +28,7 @@ class PostViewSet(ModelViewSet):
     def like(self, request, pk=None):
         post = self.get_object()
         if request.user == post.author:
-            return Response({'status': 'You can not like your own posts'}, status=405)
+            return Response({'status': 'You can not like your own posts'}, status=403)
         if request.user in post.users_like.all():
             post.users_like.remove(request.user)
             post.save()
