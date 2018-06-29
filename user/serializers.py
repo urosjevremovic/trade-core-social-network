@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from user.tasks import additiona_info_about_user
 from user.models import User
 
 
@@ -25,5 +26,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         user.set_password(validated_data['password'])
         user.save()
+        additiona_info_about_user.delay(user.id)
         return user
 
