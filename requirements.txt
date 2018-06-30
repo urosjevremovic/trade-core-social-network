@@ -4,4 +4,4 @@ requests==2.19.1
 djangorestframework_simplejwt==3.2.3
 djangorestframework==3.8.2
 celery==4.2.0
-clearbit==2.19.1
+Pillow==5.1.0
